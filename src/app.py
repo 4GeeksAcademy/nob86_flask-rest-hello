@@ -40,12 +40,43 @@ def sitemap():
 def handle_hello():
 
     planets = Planet.query.all()
+    result = [planet.serialize() for planet in planets]
 
-    # response_body = {
-    #     "msg": "Hello, this is your GET /user response "
-    # }
+    return jsonify(result), 200
 
-    return jsonify(planets), 200
+
+@app.route('/user/<int:id>', methods=['GET'])
+def handle_hello():
+
+    planet = Planet.query.get(id)
+    if planet is None :
+        return jsonify({'message':'404 do not exist'}), 404
+    #result = [planet.serialize() for planet in planets]
+
+    return jsonify(planet.serialize()), 200
+
+@app.route('/planet', methods=['POST'])
+def create_planets():
+    body = request.json
+    new_planet = Planet(body.name, body.description)
+    db.session.add(new_planet)
+    db.session.commit()#enviar datos a la db    
+    return jsonify(new_planet.serialize()), 200
+
+
+@app.route('/planet/<int:id>', methods=['DELETE'])
+def delete_planets(id):
+    
+    
+    new_planet = Planet(body.name, body.description)
+
+    planet = Planet.query.get(id)
+
+    if(planet is None):
+        return jsonify({'message': 'do not exist for delete'})
+    db.session.delete(planet)#maneja el delete pero no lo envia
+    db.session.commit()#enviar datos a la db    
+    return jsonify(new_planet.serialize()), 200
 
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
