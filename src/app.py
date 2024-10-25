@@ -46,7 +46,7 @@ def handle_hello():
 
 
 @app.route('/user/<int:id>', methods=['GET'])
-def handle_hello():
+def handle_hi():
 
     planet = Planet.query.get(id)
     if planet is None :
