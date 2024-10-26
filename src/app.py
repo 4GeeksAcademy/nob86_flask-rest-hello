@@ -106,26 +106,50 @@ def get_favorites():
 
 @app.route('/favorite', methods=['POST'])
 def create_favorites():
-    # body = request.json
-    favorite = Favorite.query.filter(db.and_(Favorite.user_id == 1, Favorite.people_id == People)).first()
-    favorite = Favorite.query.filter(db.and_(Favorite.user_id == 1, Favorite.planet_id == Planet)).first()
-    db.session.add(favorite)
+    data = request.jason
+    people_id = data.get('people_id')
+    planet_id = data.get('planet_id')
+    user_id = data.get('planet_id', 1)
+    
+    if people_id:
+
+        favorite = Favorite.query.filter(db.and_(Favorite.user_id == user_id, Favorite.people_id == people_id)).first()
+
+    elif planet_id:
+
+        favorite = Favorite.query.filter(db.and_(Favorite.user_id == user_id, Favorite.planet_id == planet_id)).first()
+
+    else:
+
+        return jsonify({'message': 'You most provide a people_id or a planet_id'}), 400
+
+    if favorite:
+
+        return jsonify({'message': 'This favorite already exists'}), 400
+
+    new_favorite = Favorite(user_id = user_id, people_id = people_id, planet_id = planet_id)
+    db.session.add(new_favorite)
     db.session.commit()#enviar datos a la db    
-    return jsonify(favorite.serialize()), 200
+    
+    return jsonify(new_favorite.serialize()), 200
 
 
 
 @app.route('/planet/<int:id>', methods=['DELETE'])
 def delete_planets(id):
-    # favorite = Favorite.query.filter(db.and_(Favorite.user_id == 1, Favorite.character_id == 2)).first()
+    # favorite = Favorite.query.filter(db.and_(Favorite.user_id == 1, Favorite.character_id == People)).first()
+    # favorite = Favorite.query.filter(db.and_(Favorite.user_id == 1, Favorite.character_id == Planet)).first()
 
-    planet = Planet.query.get(id)
+    favorite = Favorite.query.get(id)
+    db.session(favorite)
 
-    if(planet is None):
-        return jsonify({'message': 'do not exist for delete'})
-    db.session.delete(planet)#maneja el delete pero no lo envia
-    db.session.commit()#enviar datos a la db    
-    return jsonify(new_planet.serialize()), 200
+    if favorite is None:
+        return jsonify({'message': 'this favorite does not exist'}), 404
+
+    db.session.delete(favorite)#maneja el delete pero no lo envia
+    db.session.commit()#enviar datos a la db 
+
+    return jsonify({'message': 'Favorite deleted successfully'}), 200
 
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
