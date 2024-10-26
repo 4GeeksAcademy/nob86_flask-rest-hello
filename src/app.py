@@ -95,7 +95,7 @@ def get_planet(id):
 
     return jsonify(planet.serialize()), 200
 
-@app.route('/favorite', methods=['GET'])
+@app.route('/user/favorite', methods=['GET'])
 def get_favorites():
 
     favorites = Favorite.query.all()
@@ -106,18 +106,34 @@ def get_favorites():
 
 @app.route('/favorite', methods=['POST'])
 def create_favorites():
-    data = request.jason
+    data = request.json
+
+    user_id = data.get('user_id')
+    if user_id is None:
+        return jsonify({'message': 'El campo user_id es obligatorio'}), 400
+
+
     people_id = data.get('people_id')
     planet_id = data.get('planet_id')
-    user_id = data.get('planet_id', 1)
+    
     
     if people_id:
 
         favorite = Favorite.query.filter(db.and_(Favorite.user_id == user_id, Favorite.people_id == people_id)).first()
 
+        if favorite:
+            return jsonify({'message': 'This favorite is already exist'}), 400
+        
+            new_favorite = Favorite(user_id=user_id, people_id=people_id, planet_id=None)
+
     elif planet_id:
 
         favorite = Favorite.query.filter(db.and_(Favorite.user_id == user_id, Favorite.planet_id == planet_id)).first()
+
+        if favorite:
+            return jsonify({'message': 'Este favorito de planeta ya existe'}), 400
+        
+            new_favorite = Favorite(user_id=user_id, people_id=None, planet_id=planet_id)
 
     else:
 
@@ -135,7 +151,7 @@ def create_favorites():
 
 
 
-@app.route('/planet/<int:id>', methods=['DELETE'])
+@app.route('/favorite/<int:id>', methods=['DELETE'])
 def delete_planets(id):
     # favorite = Favorite.query.filter(db.and_(Favorite.user_id == 1, Favorite.character_id == People)).first()
     # favorite = Favorite.query.filter(db.and_(Favorite.user_id == 1, Favorite.character_id == Planet)).first()
