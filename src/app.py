@@ -95,65 +95,61 @@ def get_planet(id):
 
     return jsonify(planet.serialize()), 200
 
-@app.route('/user/favorite', methods=['GET'])
+@app.route('/user/favorites', methods=['GET'])
 def get_favorites():
 
     favorites = Favorite.query.all()
     result = [favorite.serialize() for favorite in favorites]
 
+    favorites = Favorite.query.filter_by(user_id=1)
+
     return jsonify(result), 200
 
 
-@app.route('/favorite', methods=['POST'])
+@app.route('/favorites/planet/<int:planet_id>', methods=['POST'])
 def create_favorites():
     data = request.json
-
-    user_id = data.get('user_id')
-    if user_id is None:
-        return jsonify({'message': 'The user_id field is required'}), 400
-
-
-    people_id = data.get('people_id')
+    
     planet_id = data.get('planet_id')
     
-    
-    if people_id:
+    favorite = Favorite.query.filter(db.and_(Favorite.user_id == 1, Favorite.planet_id == planet_id, Favorite.people_id == None)).first()
 
-        favorite = Favorite.query.filter_by(user_id=user_id, people_id=people_id).first()
+    if favorite is None:
 
-        if favorite:
-            return jsonify({'message': 'This favorite is already exist'}), 400
-        
-
-        new_favorite = Favorite(user_id=user_id, people_id=people_id, planet_id=None)
-    
-        
-            
-    elif planet_id:
-
-        favorite = Favorite.query.filter_by(user_id=user_id, planet_id=planet_id).first()
-
-        if favorite:
-            return jsonify({'message': 'This favorite is already exist'}), 400
-        
-        new_favorite = Favorite(user_id=user_id, people_id=None, planet_id=planet_id)
-
-    else:
-
-        return jsonify({'message': 'You most provide a people_id or a planet_id'}), 400
+        return jsonify({'message': 'You most provide a planet_id'}), 400
 
     
-    db.session.add(new_favorite)
+    db.session.add(favorite)
     db.session.commit()#enviar datos a la db    
     
-    return jsonify(new_favorite.serialize()), 200
+    return jsonify(favorite.serialize()), 200
+
+@app.route('/favorites/people/<int:people_id>', methods=['POST'])
+def create_favorites():
+    data = request.json
+    
+    people_id = data.get('people_id')
+    
+    favorite = Favorite.query.filter(db.and_(Favorite.user_id == 1, Favorite.planet_id == None, Favorite.people_id == people_id)).first()
+
+    if favorite is None:
+        
+        return jsonify({'message': 'You most provide a people_id'}), 400
+
+    
+    db.session.add(favorite)
+    db.session.commit()#enviar datos a la db    
+    
+    return jsonify(favorite.serialize()), 200
 
 
-
-@app.route('/favorite/<int:id>', methods=['DELETE'])
+@app.route('/favorite/planet/<int:planet_id>', methods=['DELETE'])
 def delete_favorite(id):
-    # favorite = Favorite.query.filter(db.and_(Favorite.user_id == 1, Favorite.character_id == People)).first()
-    # favorite = Favorite.query.filter(db.and_(Favorite.user_id == 1, Favorite.character_id == Planet)).first()
+    
+    data = request.json
+    
+    people_id = data.get('people_id')
+    
 
     favorite = Favorite.query.get(id)
     
