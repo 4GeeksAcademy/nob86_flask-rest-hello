@@ -110,7 +110,7 @@ def create_favorites():
 
     user_id = data.get('user_id')
     if user_id is None:
-        return jsonify({'message': 'El campo user_id es obligatorio'}), 400
+        return jsonify({'message': 'The user_id field is required'}), 400
 
 
     people_id = data.get('people_id')
@@ -119,31 +119,30 @@ def create_favorites():
     
     if people_id:
 
-        favorite = Favorite.query.filter(db.and_(Favorite.user_id == user_id, Favorite.people_id == people_id)).first()
+        favorite = Favorite.query.filter_by(user_id=user_id, people_id=people_id).first()
 
         if favorite:
             return jsonify({'message': 'This favorite is already exist'}), 400
         
-            new_favorite = Favorite(user_id=user_id, people_id=people_id, planet_id=None)
 
+        new_favorite = Favorite(user_id=user_id, people_id=people_id, planet_id=None)
+    
+        
+            
     elif planet_id:
 
-        favorite = Favorite.query.filter(db.and_(Favorite.user_id == user_id, Favorite.planet_id == planet_id)).first()
+        favorite = Favorite.query.filter_by(user_id=user_id, planet_id=planet_id).first()
 
         if favorite:
-            return jsonify({'message': 'Este favorito de planeta ya existe'}), 400
+            return jsonify({'message': 'This favorite is already exist'}), 400
         
-            new_favorite = Favorite(user_id=user_id, people_id=None, planet_id=planet_id)
+        new_favorite = Favorite(user_id=user_id, people_id=None, planet_id=planet_id)
 
     else:
 
         return jsonify({'message': 'You most provide a people_id or a planet_id'}), 400
 
-    if favorite:
-
-        return jsonify({'message': 'This favorite already exists'}), 400
-
-    new_favorite = Favorite(user_id = user_id, people_id = people_id, planet_id = planet_id)
+    
     db.session.add(new_favorite)
     db.session.commit()#enviar datos a la db    
     
@@ -152,12 +151,12 @@ def create_favorites():
 
 
 @app.route('/favorite/<int:id>', methods=['DELETE'])
-def delete_planets(id):
+def delete_favorite(id):
     # favorite = Favorite.query.filter(db.and_(Favorite.user_id == 1, Favorite.character_id == People)).first()
     # favorite = Favorite.query.filter(db.and_(Favorite.user_id == 1, Favorite.character_id == Planet)).first()
 
     favorite = Favorite.query.get(id)
-    db.session(favorite)
+    
 
     if favorite is None:
         return jsonify({'message': 'this favorite does not exist'}), 404
