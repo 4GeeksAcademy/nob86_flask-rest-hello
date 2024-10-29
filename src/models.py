@@ -9,7 +9,7 @@ class User(db.Model):
     password = db.Column(db.String(80), unique=False, nullable=False)
     is_active = db.Column(db.Boolean(), unique=False, nullable=False)
 
-    favorites = db.relationship('Favorite')
+    favorites = db.relationship('Favorite', backref="user")
 
     def __repr__(self):
         return '<User %r>' % self.username
@@ -28,6 +28,8 @@ class Planet(db.Model):
     name = db.Column(db.String(120), nullable=False)
     description = db.Column(db.String(100), nullable=True)
 
+    planet = db.relationship('Favorite', backref='planet')
+
     def serialize(self):
         return {
             "id": self.id,
@@ -43,6 +45,9 @@ class People(db.Model):
     eyes_color = db.Column(db.String(50), default="brown")
     hair_color = db.Column(db.String(50), default="black")
 
+    people = db.relationship('Favorite', backref='people')
+
+
     def serialize(self):
         return {
             "id": self.id,
@@ -54,13 +59,9 @@ class People(db.Model):
     
 class Favorite(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), primary_key=True, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     planet_id = db.Column(db.Integer, db.ForeignKey("planet.id"), nullable=True)
     people_id = db.Column(db.Integer, db.ForeignKey("people.id"), nullable=True)
-
-    planet = db.relationship('Planet')
-    people = db.relationship('People')
-
 
     def serialize(self):
         return{

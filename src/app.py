@@ -114,12 +114,12 @@ def create_favorite_planet(planet_id):
         return jsonify({'message': 'The user_id field is required'}), 400
 
     # Verificar si ya existe el favorito
-    favorite = Favorite.query.filter_by(user_id=user_id, planet_id=planet_id, people_id=None).first()
+    favorite = Favorite.query.filter_by(user_id = user_id, planet_id = planet_id, people_id = None).first()
     if favorite:
         return jsonify({'message': 'This favorite already exists'}), 400
 
     # Crear nuevo favorito
-    new_favorite = Favorite(user_id=user_id, planet_id=planet_id, people_id=None)
+    new_favorite = Favorite(user_id = user_id, planet_id = planet_id, people_id = None)
     db.session.add(new_favorite)
     db.session.commit()
     
